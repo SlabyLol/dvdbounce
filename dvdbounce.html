@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>DVD LOL Screensaver</title>
+
+<style>
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+#logo {
+    position: absolute;
+    font-size: 64px;
+    font-weight: bold;
+    user-select: none;
+}
+
+#ui {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.65);
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+#fps { color: lime; }
+#corner { color: cyan; }
+</style>
+</head>
+
+<body>
+
+<div id="logo">lol</div>
+
+<div id="ui">
+    Text:<br>
+    <input id="textInput" type="text" value="lol"><br><br>
+
+    Speed:<br>
+    <input id="speedInput" type="range" min="1" max="12" value="4"><br><br>
+
+    <label>
+        <input id="soundToggle" type="checkbox" checked>
+        Sound
+    </label><br><br>
+
+    <div id="fps">FPS: 0</div>
+    <div id="corner">Corner Hits: 0</div>
+</div>
+
+<script>
+const logo = document.getElementById("logo");
+const textInput = document.getElementById("textInput");
+const speedInput = document.getElementById("speedInput");
+const fpsLabel = document.getElementById("fps");
+const cornerLabel = document.getElementById("corner");
+const soundToggle = document.getElementById("soundToggle");
+
+let x = 100, y = 100;
+let vx = 4, vy = 4;
+let cornerHits = 0;
+
+// Sound
+const audio = new Audio(
+    "data:audio/wav;base64,UklGRlAAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
+);
+
+// FPS
+let frames = 0;
+let lastTime = performance.now();
+
+function randomColor() {
+    return `hsl(${Math.random() * 360}, 100%, 50%)`;
+}
+
+function animate(time) {
+    frames++;
+    if (time - lastTime >= 1000) {
+        fpsLabel.textContent = "FPS: " + frames;
+        frames = 0;
+        lastTime = time;
+    }
+
+    const speed = Number(speedInput.value);
+    vx = Math.sign(vx) * speed;
+    vy = Math.sign(vy) * speed;
+
+    x += vx;
+    y += vy;
+
+    const rect = logo.getBoundingClientRect();
+    let hitX = false;
+    let hitY = false;
+
+    if (x <= 0 || x + rect.width >= innerWidth) {
+        vx *= -1;
+        hitX = true;
+    }
+
+    if (y <= 0 || y + rect.height >= innerHeight) {
+        vy *= -1;
+        hitY = true;
+    }
+
+    if (hitX || hitY) {
+        logo.style.color = randomColor();
+        if (soundToggle.checked) {
+            audio.currentTime = 0;
+            audio.play();
+        }
+    }
+
+    if (hitX && hitY) {
+        cornerHits++;
+        cornerLabel.textContent = "Corner Hits: " + cornerHits;
+    }
+
+    logo.style.left = x + "px";
+    logo.style.top = y + "px";
+
+    requestAnimationFrame(animate);
+}
+
+textInput.addEventListener("input", () => {
+    logo.textContent = textInput.value || " ";
+});
+
+animate();
+</script>
+
+</body>
+</html>
